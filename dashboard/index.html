@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Firewall Dashboard</title>
+</head>
+<body>
+
+<h2>Live Firewall Logs</h2>
+
+<pre id="logs">Loading...</pre>
+
+<script>
+async function loadLogs() {
+  const res = await fetch("/logs");
+  const data = await res.json();
+
+  document.getElementById("logs").innerText =
+    JSON.stringify(data, null, 2);
+}
+
+setInterval(loadLogs, 2000);
+loadLogs();
+</script>
+
+</body>
+</html>
