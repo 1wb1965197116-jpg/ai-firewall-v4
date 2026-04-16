@@ -5,28 +5,46 @@
 </head>
 <body>
 
-<h2>Live AI Firewall Logs</h2>
+<h2>AI Firewall Dashboard</h2>
 
-<button onclick="loadLogs()">Refresh</button>
+<input id="username" placeholder="username">
+<input id="password" placeholder="password" type="password">
+<button onclick="login()">Login</button>
 
-<pre id="logs">Loading...</pre>
+<pre id="feed"></pre>
 
 <script>
-async function loadLogs() {
-  try {
-    const res = await fetch("https://YOUR-RENDER-URL.onrender.com/logs");
-    const data = await res.json();
+let token = "";
 
-    document.getElementById("logs").innerText =
-      JSON.stringify(data, null, 2);
-  } catch (err) {
-    document.getElementById("logs").innerText =
-      "Error loading logs: " + err.message;
-  }
+async function login() {
+  const res = await fetch("https://YOUR-RENDER-URL.onrender.com/login", {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value
+    })
+  });
+
+  const data = await res.json();
+
+  token = data.token;
+
+  startSocket();
 }
 
-loadLogs();
-setInterval(loadLogs, 3000);
+function startSocket() {
+  const socket = new WebSocket("wss://YOUR-RENDER-URL.onrender.com");
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+
+    if (data.user && data.user !== username.value) return;
+
+    feed.innerText =
+      JSON.stringify(data, null, 2) + "\n\n" + feed.innerText;
+  };
+}
 </script>
 
 </body>
