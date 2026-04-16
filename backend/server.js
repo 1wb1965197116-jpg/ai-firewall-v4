@@ -3,31 +3,19 @@ const app = express();
 
 app.use(express.json());
 
-let logs = [];
-
-function decision(risk) {
-  if (risk > 60) return "block";
-  if (risk > 30) return "review";
-  return "allow";
-}
+app.get("/", (req, res) => {
+  res.send("AI Firewall is LIVE ✔");
+});
 
 app.post("/event", (req, res) => {
-  const event = req.body;
-
-  const result = {
-    status: decision(event.risk),
-    received: event
-  };
-
-  logs.push(result);
-
-  console.log("EVENT:", result);
-
-  res.json(result);
+  res.json({
+    status: "received",
+    data: req.body
+  });
 });
 
 app.get("/logs", (req, res) => {
-  res.json(logs);
+  res.json({ message: "logs endpoint working" });
 });
 
 app.listen(process.env.PORT || 3000, () => {
