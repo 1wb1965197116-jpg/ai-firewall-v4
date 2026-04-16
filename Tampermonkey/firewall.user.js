@@ -10,7 +10,7 @@
 (function () {
   'use strict';
 
-  // 🔐 PUT YOUR TOKEN HERE
+  // 🔐 PUT YOUR REAL TOKEN HERE
   let USER_TOKEN = "PASTE_YOUR_REAL_TOKEN_HERE";
 
   function clean(str) {
@@ -67,8 +67,8 @@
 
     showPopup(`AI Firewall: ${status}\nRisk: ${risk}`, color);
 
-    // SEND TO YOUR BACKEND
-    await fetch("https://YOUR-RENDER-URL.onrender.com/event", {
+    // ✅ FIXED FETCH
+    await fetch("https://ai-firewall-v4.onrender.com/event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
