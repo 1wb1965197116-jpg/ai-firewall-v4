@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         AI Firewall v6
+// @name         AI Firewall v6 Auto Login
 // @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  AI Paste Firewall
+// @version      2.0
+// @description  AI Firewall with Auto Login
 // @match        *://*/*
 // @grant        none
 // ==/UserScript==
@@ -10,9 +10,46 @@
 (function () {
   'use strict';
 
-  // 🔐 PUT YOUR REAL TOKEN HERE
-  let USER_TOKEN = "PASTE_YOUR_REAL_TOKEN_HERE";
+  const API = "https://ai-firewall-v4.onrender.com";
 
+  let USER_TOKEN = localStorage.getItem("ai_firewall_token");
+
+  /* =========================
+     AUTO LOGIN
+  ========================= */
+  async function login() {
+    let username = prompt("AI Firewall Username:");
+    let password = prompt("AI Firewall Password:");
+
+    const res = await fetch(API + "/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ username, password })
+    });
+
+    const data = await res.json();
+
+    if (data.token) {
+      localStorage.setItem("ai_firewall_token", data.token);
+      USER_TOKEN = data.token;
+      alert("Logged in ✔");
+    } else {
+      alert("Login failed");
+    }
+  }
+
+  /* =========================
+     CHECK TOKEN ON LOAD
+  ========================= */
+  if (!USER_TOKEN) {
+    login();
+  }
+
+  /* =========================
+     CLEAN FUNCTION
+  ========================= */
   function clean(str) {
     return (str || "")
       .normalize("NFKC")
@@ -21,6 +58,9 @@
       .trim();
   }
 
+  /* =========================
+     POPUP
+  ========================= */
   function showPopup(message, color = "#111") {
     let old = document.getElementById("ai-popup");
     if (old) old.remove();
@@ -43,7 +83,16 @@
     setTimeout(() => box.remove(), 4000);
   }
 
+  /* =========================
+     PASTE EVENT
+  ========================= */
   document.addEventListener("paste", async function (e) {
+
+    if (!USER_TOKEN) {
+      showPopup("Not logged in", "#e74c3c");
+      return;
+    }
+
     let raw = (e.clipboardData || window.clipboardData).getData("text");
     let cleaned = clean(raw);
 
@@ -67,8 +116,7 @@
 
     showPopup(`AI Firewall: ${status}\nRisk: ${risk}`, color);
 
-    // ✅ FIXED FETCH
-    await fetch("https://ai-firewall-v4.onrender.com/event", {
+    await fetch(API + "/event", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -80,6 +128,7 @@
         url: location.href
       })
     });
+
   });
 
 })();
