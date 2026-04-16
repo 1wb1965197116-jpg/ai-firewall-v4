@@ -1,5 +1,17 @@
+// ==UserScript==
+// @name         AI Firewall v6
+// @namespace    http://tampermonkey.net/
+// @version      1.0
+// @description  AI Paste Firewall
+// @match        *://*/*
+// @grant        none
+// ==/UserScript==
+
 (function () {
   'use strict';
+
+  // 🔐 PUT YOUR TOKEN HERE
+  let USER_TOKEN = "PASTE_YOUR_REAL_TOKEN_HERE";
 
   function clean(str) {
     return (str || "")
@@ -9,20 +21,6 @@
       .trim();
   }
 
-  function riskScore(text) {
-    let score = 0;
-
-    if (/\u200B|\u200C|\u200D/.test(text)) score += 40;
-    if (text.length > 2000) score += 20;
-    if (/[<>]/.test(text)) score += 10;
-    if (/(sk-|api|token|secret)/i.test(text)) score += 30;
-
-    return score;
-  }
-
-  /* =========================
-     POPUP UI
-  ========================= */
   function showPopup(message, color = "#111") {
     let old = document.getElementById("ai-popup");
     if (old) old.remove();
@@ -38,22 +36,20 @@
     box.style.color = "white";
     box.style.padding = "15px";
     box.style.borderRadius = "10px";
-    box.style.fontSize = "14px";
-    box.style.boxShadow = "0 0 10px rgba(0,0,0,0.3)";
+
     box.innerText = message;
 
     document.body.appendChild(box);
-
     setTimeout(() => box.remove(), 4000);
   }
 
-  /* =========================
-     PASTE LISTENER
-  ========================= */
   document.addEventListener("paste", async function (e) {
     let raw = (e.clipboardData || window.clipboardData).getData("text");
     let cleaned = clean(raw);
-    let risk = riskScore(raw);
+
+    let risk = 0;
+    if (raw !== cleaned) risk += 40;
+    if (/(sk-|api|token|secret)/i.test(raw)) risk += 30;
 
     let status = "ALLOW";
     let color = "#2ecc71";
@@ -69,23 +65,19 @@
       e.preventDefault();
     }
 
-    // SHOW POPUP
-    showPopup(
-      `AI Firewall: ${status}\nRisk Score: ${risk}`,
-      color
-    );
+    showPopup(`AI Firewall: ${status}\nRisk: ${risk}`, color);
 
-    // SEND TO BACKEND (optional)
-    await fetch("https://YOUR-BACKEND.com/event", {
+    // SEND TO YOUR BACKEND
+    await fetch("https://YOUR-RENDER-URL.onrender.com/event", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
+        token: USER_TOKEN,
         raw,
-        cleaned,
-        risk,
-        status,
-        url: location.href,
-        time: Date.now()
+        clean: cleaned,
+        url: location.href
       })
     });
   });
