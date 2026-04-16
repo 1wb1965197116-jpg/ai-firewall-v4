@@ -5,21 +5,28 @@
 </head>
 <body>
 
-<h2>Live Firewall Logs</h2>
+<h2>Live AI Firewall Logs</h2>
+
+<button onclick="loadLogs()">Refresh</button>
 
 <pre id="logs">Loading...</pre>
 
 <script>
 async function loadLogs() {
-  const res = await fetch("/logs");
-  const data = await res.json();
+  try {
+    const res = await fetch("https://YOUR-RENDER-URL.onrender.com/logs");
+    const data = await res.json();
 
-  document.getElementById("logs").innerText =
-    JSON.stringify(data, null, 2);
+    document.getElementById("logs").innerText =
+      JSON.stringify(data, null, 2);
+  } catch (err) {
+    document.getElementById("logs").innerText =
+      "Error loading logs: " + err.message;
+  }
 }
 
-setInterval(loadLogs, 2000);
 loadLogs();
+setInterval(loadLogs, 3000);
 </script>
 
 </body>
