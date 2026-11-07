@@ -86,9 +86,7 @@ app.post("/event", (req, res) => {
 
   events.push(event);
 
-  console.log("EVENT:", event);
-
-  broadcast(event);
+  // Raw input may contain sensitive data. Do not log or broadcast it.
 
   res.json({ status: "logged" });
 });
